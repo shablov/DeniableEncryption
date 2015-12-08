@@ -16,12 +16,16 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     common/dict.cpp \
     common/dictprivate.cpp \
-    common/fileselectwidget.cpp
+    common/fileselectwidget.cpp \
+    cryptographer.cpp \
+    hashcryptographer.cpp
 
 HEADERS  += mainwindow.h \
     include/dict.h \
     include/fileselectwidget.h \
-    common/dictprivate.h
+    common/dictprivate.h \
+    cryptographer.h \
+    hashcryptographer.h
 
 INCLUDEPATH += ./include
 
