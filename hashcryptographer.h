@@ -3,6 +3,8 @@
 
 #include "cryptographer.h"
 
+#include <QVariant>
+
 class HashCryptographer : public Cryptographer
 {
 public:

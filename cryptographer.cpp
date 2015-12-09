@@ -76,7 +76,7 @@ bool Cryptographer::encrypt(const QVariant &parameters)
 	if (!realInputDevice || !realInputDevice->open(QIODevice::ReadOnly) ||
 		!fakeInputDevice || !fakeInputDevice->open(QIODevice::ReadOnly) ||
 		!outputDevice || !outputDevice->open(QIODevice::WriteOnly) ||
-		!pRealKey || !pFakeKey)
+		!pRealKey || !pRealKey->isValid() || !pFakeKey || !pFakeKey->isValid())
 	{
 		qDebug() << Q_FUNC_INFO << "cryptographer not complete for encryprion";
 		return false;
@@ -88,9 +88,10 @@ bool Cryptographer::decrypt(Cryptographer::Device deviceNumber, Cryptographer::K
 {
 	Q_UNUSED(parameters);
 	QIODevice *device = deviceFromNumber(deviceNumber);
+	KeyCipher *key = keyFromNumber(keyNumber);
 	if (deviceNumber == OutputDevice || !device || !device->open(QIODevice::ReadOnly) ||
 		!outputDevice || !outputDevice->open(QIODevice::WriteOnly) ||
-		!keyFromNumber(keyNumber))
+		!key || !key->isValid())
 	{
 		return false;
 	}
@@ -127,4 +128,9 @@ KeyCipher::KeyCipher(QObject *parent) :
 bool KeyCipher::load(const QByteArray &ba)
 {
 	return valid = !ba.isEmpty();
+}
+
+bool KeyCipher::isValid() const
+{
+	return valid;
 }

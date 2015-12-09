@@ -2,6 +2,7 @@
 #define CRYPTOGRAPHER_H
 
 #include <QObject>
+#include <QVariant>
 
 class QIODevice;
 class KeyCipher;
@@ -32,7 +33,7 @@ public:
 	void setKey(const QByteArray &ba, Cryptographer::Key keyNumber);
 
 public:
-	virtual bool encrypt(const QVariant &parameters);
+	virtual bool encrypt(const QVariant &parameters = QVariant());
 	virtual bool decrypt(Cryptographer::Device deviceNumber, Cryptographer::Key keyNumber, const QVariant &parameters);
 
 protected:
@@ -54,7 +55,9 @@ public:
 
 	virtual bool load(const QByteArray &ba);
 
-private:
+	bool isValid() const;
+
+protected:
 	bool valid;
 };
 
