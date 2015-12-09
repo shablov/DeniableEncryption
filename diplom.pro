@@ -37,3 +37,13 @@ RCC_DIR = obj
 LIBS += -L$$PWD/libarageli/lib/ -larageli
 
 INCLUDEPATH += $$PWD/libarageli/src/arageli
+
+!exists(libarageli/lib/libarageli.a) {
+    message("configure and make libarageli...")
+    system(cd libarageli \
+    && mkdir lib \
+    && make)
+}
+exists(libarageli/lib/libarageli.a) {
+    message("libarageli found")
+}

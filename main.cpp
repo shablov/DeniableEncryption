@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 	cryptographer->setDevice(data, Cryptographer::OutputDevice);
 	cryptographer->setKey(QByteArray("real key"), Cryptographer::RealKey);
 	cryptographer->setKey(QByteArray("fake key"), Cryptographer::FakeKey);
-	QVariant algorithm = QVariant::fromValue<QCryptographicHash::Algorithm>(QCryptographicHash::Md4);
+	QVariant algorithm = QVariant::fromValue<QCryptographicHash::Algorithm>(QCryptographicHash::Sha3_512);
 	cryptographer->encrypt(algorithm);
 	qDebug() << data.toHex();
 
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 	cryptographer->decrypt(Cryptographer::RealDevice, Cryptographer::RealKey, algorithm);
 	qDebug() << decryptData;
 	cryptographer->decrypt(Cryptographer::FakeDevice, Cryptographer::FakeKey, algorithm);
-	qDebug() << decryptData;
+	qDebug() << decryptData << "\n";
 	return 0;
 }
 
