@@ -15,15 +15,15 @@ int main(int argc, char *argv[])
 	QByteArray second = "world hello ";
 	cryptographer->setDevice(first, Cryptographer::RealDevice);
 	cryptographer->setDevice(second, Cryptographer::FakeDevice);
-	QByteArray data(qMax(first.count(), second.count()), 0x00);
+	QByteArray data;
 	cryptographer->setDevice(data, Cryptographer::OutputDevice);
 	cryptographer->setKey(QByteArray("real key"), Cryptographer::RealKey);
 	cryptographer->setKey(QByteArray("fake key"), Cryptographer::FakeKey);
 	QVariant algorithm = QVariant::fromValue<QCryptographicHash::Algorithm>(QCryptographicHash::Md4);
-	cryptographer->crypt(algorithm);
+	cryptographer->encrypt(algorithm);
 	qDebug() << data.toHex();
 
-	QByteArray decryptData(qMax(first.count(), second.count()), 0x00);
+	QByteArray decryptData;
 	cryptographer->setDevice(data, Cryptographer::RealDevice);
 	cryptographer->setDevice(data, Cryptographer::FakeDevice);
 	cryptographer->setDevice(decryptData, Cryptographer::OutputDevice);

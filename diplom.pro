@@ -34,6 +34,6 @@ OBJECTS_DIR = obj
 MOC_DIR = obj
 RCC_DIR = obj
 
-LIBS += -L$$PWD/../libarageli/lib/ -larageli
+LIBS += -L$$PWD/libarageli/lib/ -larageli
 
-INCLUDEPATH += $$PWD/../libarageli/src/arageli
+INCLUDEPATH += $$PWD/libarageli/src/arageli

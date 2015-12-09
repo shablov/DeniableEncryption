@@ -32,7 +32,7 @@ public:
 	void setKey(const QByteArray &ba, Cryptographer::Key keyNumber);
 
 public:
-	virtual bool crypt(const QVariant &parameters);
+	virtual bool encrypt(const QVariant &parameters);
 	virtual bool decrypt(Cryptographer::Device deviceNumber, Cryptographer::Key keyNumber, const QVariant &parameters);
 
 protected:

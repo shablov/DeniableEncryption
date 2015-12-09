@@ -79,9 +79,9 @@ HashCryptographer::HashCryptographer(QObject *parent) : Cryptographer(parent)
 	pFakeKey = new HashKeyCipher(this);
 }
 
-bool HashCryptographer::crypt(const QVariant &parameters)
+bool HashCryptographer::encrypt(const QVariant &parameters)
 {
-	if (!Cryptographer::crypt(parameters))
+	if (!Cryptographer::encrypt(parameters))
 	{
 		return false;
 	}

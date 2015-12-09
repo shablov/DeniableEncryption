@@ -70,7 +70,7 @@ void Cryptographer::setKey(const QByteArray &ba, Cryptographer::Key keyNumber)
 	key->load(ba);
 }
 
-bool Cryptographer::crypt(const QVariant &parameters)
+bool Cryptographer::encrypt(const QVariant &parameters)
 {
 	Q_UNUSED(parameters);
 	if (!realInputDevice || !realInputDevice->open(QIODevice::ReadOnly) ||
