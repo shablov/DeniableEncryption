@@ -44,14 +44,7 @@ void Cryptographer::setDevice(QIODevice *d, Device deviceNumber)
 
 void Cryptographer::setDevice(QByteArray &ba, Device deviceNumber)
 {
-	QIODevice *device = deviceFromNumber(deviceNumber);
-	if (device)
-	{
-		device->deleteLater();
-		device = 0;
-	}
-	QBuffer *buffer = new QBuffer(&ba, this);
-	setDevice(buffer, deviceNumber);
+	setDevice(new QBuffer(&ba, this), deviceNumber);
 }
 
 void Cryptographer::setKey(QIODevice *d, Cryptographer::Key keyNumber)

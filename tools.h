@@ -1,6 +1,8 @@
 #ifndef TOOLS_H
 #define TOOLS_H
 
+#include <QDataStream>
+
 #pragma GCC diagnostic push
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -16,36 +18,59 @@
 
 using namespace Arageli;
 
-template <class T>
-big_int big_intFromByteArray(const QByteArray &ba)
+class Tools
 {
-	size_t size = sizeof(T);
-	if (ba.size() % size != 0)
+public:
+	template <class T>
+	static big_int big_intFromByteArray(const QByteArray &ba)
 	{
-		switch (size)
+		size_t size = sizeof(T);
+		if (ba.size() % size != 0)
 		{
-			case 8: return big_intFromByteArray<quint32>(ba);
-			case 4: return big_intFromByteArray<quint16>(ba);
-			case 2: return big_intFromByteArray<quint8>(ba);
-			default: break;
+			switch (size)
+			{
+				case 8: return big_intFromByteArray<quint32>(ba);
+				case 4: return big_intFromByteArray<quint16>(ba);
+				case 2: return big_intFromByteArray<quint8>(ba);
+				default: break;
+			}
 		}
+		static int s = 0;
+		if (s != ba.size())
+		{
+			s = ba.size();
+		}
+		big_int result = 0;
+		T data;
+		QDataStream out(ba);
+		while (!out.atEnd())
+		{
+			out >> data;
+			result <<= (size * 8);
+			result += data;
+		}
+		return result;
 	}
-	static int s = 0;
-	if (s != ba.size())
+
+	static QByteArray big_intToByteArray(const big_int &number)
 	{
-		s = ba.size();
+		QByteArray result = QByteArray();
+		unsigned char byte = 0x00;
+		for (int i = number.length() - 1; i >=0 ; i--)
+		{
+			byte <<= 1;
+			byte += (number.bit(i) ? 1: 0);
+			if ((i) % 8 == 0)
+			{
+				result.append(byte);
+				byte = 0x00;
+			}
+		}
+
+		return result;
 	}
-	big_int result = 0;
-	T data;
-	QDataStream out(ba);
-	while (!out.atEnd())
-	{
-		out >> data;
-		result <<= size;
-		result += data;
-	}
-	return result;
-}
+};
+
 
 #endif // TOOLS_H
 
