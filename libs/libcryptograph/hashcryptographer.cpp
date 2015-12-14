@@ -23,6 +23,7 @@ bool HashCryptographer::encrypt(const QVariant &parameters)
 	HashKeyCipher *fakeKey = qobject_cast<HashKeyCipher *>(pFakeKey);
 	if (!realKey || !fakeKey || !parameters.canConvert<QCryptographicHash::Algorithm>())
 	{
+		endEncrypt();
 		qDebug() << Q_FUNC_INFO << "keys or parameters is not valid";
 		return false;
 	}
@@ -64,6 +65,7 @@ bool HashCryptographer::encrypt(const QVariant &parameters)
 			break;
 		} while (true);
 	}
+	endEncrypt();
 	return true;
 }
 
@@ -77,6 +79,7 @@ bool HashCryptographer::decrypt(Device deviceNumber, Key keyNumber, const QVaria
 	if (!key || !parameters.canConvert<QCryptographicHash::Algorithm>())
 	{
 		qDebug() << Q_FUNC_INFO << "key or parameters is not valid";
+		endDecrypt(deviceNumber);
 		return false;
 	}
 	QCryptographicHash::Algorithm algorithm = parameters.value<QCryptographicHash::Algorithm>();
@@ -87,6 +90,7 @@ bool HashCryptographer::decrypt(Device deviceNumber, Key keyNumber, const QVaria
 		unsigned char data = static_cast<unsigned char>(hash % 256);
 		outputDevice->write((const  char*)(&data), 1);
 	}
+	endDecrypt(deviceNumber);
 	return true;
 }
 

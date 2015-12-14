@@ -91,6 +91,19 @@ bool Cryptographer::decrypt(Cryptographer::Device deviceNumber, Cryptographer::K
 	return true;
 }
 
+void Cryptographer::endEncrypt()
+{
+	realInputDevice->close();
+	fakeInputDevice->close();
+	outputDevice->close();
+}
+
+void Cryptographer::endDecrypt(Cryptographer::Device deviceNumber)
+{
+	deviceFromNumber(deviceNumber)->close();
+	outputDevice->close();
+}
+
 QIODevice *Cryptographer::deviceFromNumber(Cryptographer::Device deviceNumber)
 {
 	switch (deviceNumber)

@@ -37,6 +37,9 @@ public:
 	virtual bool decrypt(Cryptographer::Device deviceNumber, Cryptographer::Key keyNumber, const QVariant &parameters);
 
 protected:
+	void endEncrypt();
+	void endDecrypt(Cryptographer::Device deviceNumber);
+
 	QIODevice *deviceFromNumber(Cryptographer::Device deviceNumber);
 	QIODevice *realInputDevice;
 	QIODevice *fakeInputDevice;

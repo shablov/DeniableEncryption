@@ -151,6 +151,7 @@ bool AESCryptographerHash::encrypt(const QVariant &parameters)
 			break;
 		} while (true);
 	}
+	endEncrypt();
 	return true;
 }
 
@@ -170,6 +171,7 @@ bool AESCryptographerHash::decrypt(Device deviceNumber, Key keyNumber, const QVa
 		quint8 data = static_cast<quint8>(Tools::big_intFromByteArray<quint64>(encryptAES(cipherData, key, type)) % 256);
 		outputDevice->write((const  char*)(&data), 1);
 	}
+	endDecrypt(deviceNumber);
 	return true;
 }
 
@@ -190,6 +192,7 @@ bool AESCryptographerChinese::encrypt(const QVariant &parameters)
 	}
 	if (!mSecondRealKey->isValid() || !mSecondFakeKey->isValid())
 	{
+		endEncrypt();
 		qDebug() << "second keys not valid";
 		return false;
 	}
@@ -198,6 +201,7 @@ bool AESCryptographerChinese::encrypt(const QVariant &parameters)
 	AESKeyCipher *fakeKey = qobject_cast<AESKeyCipher *>(pFakeKey);
 	intermediateRealKey = mSecondFakeKey->value() * inverse_mod(mSecondFakeKey->value(), mSecondRealKey->value());
 	intermediateFakeKey = mSecondRealKey->value() * inverse_mod(mSecondRealKey->value(), mSecondFakeKey->value());
+	big_int modulo = mSecondRealKey->value() * mSecondFakeKey->value();
 	while (!realInputDevice->atEnd() || !fakeInputDevice->atEnd())
 	{
 		QByteArray realInputData(16, 0x00);
@@ -212,15 +216,12 @@ bool AESCryptographerChinese::encrypt(const QVariant &parameters)
 		}
 		big_int C1 = Tools::big_intFromByteArray<quint64>(encryptAES(realInputData, realKey, type));
 		big_int C2 = Tools::big_intFromByteArray<quint64>(encryptAES(fakeInputData, fakeKey, type));
-		big_int modulo = mSecondRealKey->value() * mSecondFakeKey->value();
 		big_int C = mod(C1 * intermediateRealKey + C2 * intermediateFakeKey, modulo);
 		QByteArray result = Tools::big_intToByteArray(C);
-		if (static_cast<size_t>(result.size()) * 8 < modulo.length())
-		{
-			result.prepend(char(0x00));
-		}
+		result = result.rightJustified(33, 0x00);
 		outputDevice->write(result);
 	}
+	endEncrypt();
 	return true;
 }
 bool AESCryptographerChinese::decrypt(Cryptographer::Device deviceNumber, Cryptographer::Key keyNumber, const QVariant &parameters)
@@ -236,6 +237,7 @@ bool AESCryptographerChinese::decrypt(Cryptographer::Device deviceNumber, Crypto
 	AESChineseKeyCiper *secondKey = keyNumber == Cryptographer::RealKey ? mSecondRealKey : mSecondFakeKey;
 	if (!secondKey->isValid())
 	{
+		endDecrypt(deviceNumber);
 		qDebug() << "second key not valid";
 		return false;
 	}
@@ -247,9 +249,11 @@ bool AESCryptographerChinese::decrypt(Cryptographer::Device deviceNumber, Crypto
 	{
 		device->read(cipherData.data(), 33);
 		big_int C = mod(Tools::big_intFromByteArray<quint64>(cipherData), secondKey->value());
-		outputDevice->write(decryptAES(Tools::big_intToByteArray(C), key, type));
+		QByteArray cipher = Tools::big_intToByteArray(C);
+		cipher = cipher.rightJustified(16, 0x00);
+		outputDevice->write(decryptAES(cipher, key, type));
 	}
-	return true;
+	endDecrypt(deviceNumber);
 	return true;
 }
 
