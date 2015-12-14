@@ -49,13 +49,13 @@ bool HashCryptographer::encrypt(const QVariant &parameters)
 			randomNumber = qrand();
 			in << randomNumber;
 
-			big_int hash1 = Tools::big_intFromByteArray<quint64>(QCryptographicHash::hash(realKey->data() + randomKey, algorithm));
+			big_int hash1 = Tools::big_intFromByteArray<quint64>(QCryptographicHash::hash(realKey->value() + randomKey, algorithm));
 			if ((unsigned char)((hash1 % 256)) != realInputData)
 			{
 				continue;
 			}
 
-			big_int hash2 = Tools::big_intFromByteArray<quint64>(QCryptographicHash::hash(fakeKey->data() + randomKey, algorithm));
+			big_int hash2 = Tools::big_intFromByteArray<quint64>(QCryptographicHash::hash(fakeKey->value() + randomKey, algorithm));
 			if ((unsigned char)((hash2 % 256)) != fakeInputData)
 			{
 				continue;
@@ -83,7 +83,7 @@ bool HashCryptographer::decrypt(Device deviceNumber, Key keyNumber, const QVaria
 	QIODevice *device = deviceFromNumber(deviceNumber);
 	while (!device->atEnd())
 	{
-		big_int hash = Tools::big_intFromByteArray<quint64>(QCryptographicHash::hash(key->data() + device->read(4), algorithm));
+		big_int hash = Tools::big_intFromByteArray<quint64>(QCryptographicHash::hash(key->value() + device->read(4), algorithm));
 		unsigned char data = static_cast<unsigned char>(hash % 256);
 		outputDevice->write((const  char*)(&data), 1);
 	}
@@ -104,7 +104,12 @@ bool HashKeyCipher::load(const QByteArray &ba)
 	return true;
 }
 
-QByteArray HashKeyCipher::data()
+QByteArray HashKeyCipher::data() const
+{
+	return mData;
+}
+
+QByteArray HashKeyCipher::value() const
 {
 	return mData;
 }

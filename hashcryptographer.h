@@ -23,7 +23,8 @@ public:
 	HashKeyCipher(QObject *parent = 0);
 
 	virtual bool load(const QByteArray &ba);
-	QByteArray data();
+	virtual QByteArray data() const;
+	QByteArray value() const;
 
 private:
 	QByteArray mData;

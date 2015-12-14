@@ -12,8 +12,8 @@ int main(int argc, char *argv[])
 	Q_UNUSED(argc);
 	Q_UNUSED(argv);
 
-	QByteArray realData(1*1024*1024*1024, 0x00);
-	QByteArray fakeData(1*1024*1024*1024, 0xFF);
+	QByteArray realData(1*1024, 0x00);
+	QByteArray fakeData(1*1024, 0xFF);
 	QByteArray cipherData;
 	QByteArray decryptData;
 	QByteArray realKey = "real key";
@@ -100,6 +100,9 @@ int main(int argc, char *argv[])
 	cryptChinese->setDevice(cipherData, Cryptographer::OutputDevice);
 	cryptChinese->setKey(realKey, Cryptographer::RealKey);
 	cryptChinese->setKey(fakeKey, Cryptographer::FakeKey);
+	cryptChinese->generateSecondKeys();
+	KeyCipher *secondRealKey = cryptChinese->secondRealKey();
+	KeyCipher *secondFakeKey = cryptChinese->secondFakeKey();
 	qDebug() << "Begin encrypt in:" << QTime::currentTime();
 	cryptChinese->encrypt(parameters);
 	qDebug() << "End encrypt in:" << QTime::currentTime();
@@ -108,6 +111,8 @@ int main(int argc, char *argv[])
 	cryptChinese->setDevice(cipherData, Cryptographer::RealDevice);
 	cryptChinese->setDevice(cipherData, Cryptographer::FakeDevice);
 	cryptChinese->setDevice(decryptData, Cryptographer::OutputDevice);
+	cryptChinese->setSecondRealKey(secondRealKey->data());
+	cryptChinese->setSecondFakeKey(secondFakeKey->data());
 	qDebug() << "Begin decrypt real data in:" << QTime::currentTime();
 	cryptChinese->decrypt(Cryptographer::RealDevice, Cryptographer::RealKey, parameters);
 	qDebug() << "End decrypt real data in:" << QTime::currentTime();

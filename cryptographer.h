@@ -54,6 +54,7 @@ public:
 	KeyCipher(QObject *parent = 0);
 
 	virtual bool load(const QByteArray &ba);
+	virtual QByteArray data() const = 0;
 
 	bool isValid() const;
 

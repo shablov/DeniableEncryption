@@ -11,6 +11,11 @@ AESCryptographer::AESCryptographer(QObject *parent) : Cryptographer(parent)
 	pFakeKey = new AESKeyCipher(this);
 }
 
+int AESCryptographer::blockSize()
+{
+	return 16;
+}
+
 bool AESCryptographer::encrypt(const QVariant &parameters)
 {
 	if (!Cryptographer::encrypt(parameters))
@@ -52,17 +57,17 @@ QByteArray AESCryptographer::encryptAES(const QByteArray &data, AESKeyCipher *ke
 	{
 		case AES_128:
 		{
-			intel_AES_enc128((UCHAR*)data.data(), (UCHAR*)cipherData.data(), key->data(), 1);
+			intel_AES_enc128((UCHAR*)data.data(), (UCHAR*)cipherData.data(), key->value(), 1);
 			break;
 		}
 		case AES_192:
 		{
-			intel_AES_enc192((UCHAR*)data.data(), (UCHAR*)cipherData.data(), key->data(), 1);
+			intel_AES_enc192((UCHAR*)data.data(), (UCHAR*)cipherData.data(), key->value(), 1);
 			break;
 		}
 		case AES_256:
 		{
-			intel_AES_enc256((UCHAR*)data.data(), (UCHAR*)cipherData.data(), key->data(), 1);
+			intel_AES_enc256((UCHAR*)data.data(), (UCHAR*)cipherData.data(), key->value(), 1);
 			break;
 		}
 	}
@@ -77,17 +82,17 @@ QByteArray AESCryptographer::decryptAES(const QByteArray &cipherData, AESKeyCiph
 	{
 		case AES_128:
 		{
-			intel_AES_dec128((UCHAR*)cipherData.data(), (UCHAR*)decryptData.data(), key->data(), 1);
+			intel_AES_dec128((UCHAR*)cipherData.data(), (UCHAR*)decryptData.data(), key->value(), 1);
 			break;
 		}
 		case AES_192:
 		{
-			intel_AES_dec192((UCHAR*)cipherData.data(), (UCHAR*)decryptData.data(), key->data(), 1);
+			intel_AES_dec192((UCHAR*)cipherData.data(), (UCHAR*)decryptData.data(), key->value(), 1);
 			break;
 		}
 		case AES_256:
 		{
-			intel_AES_dec256((UCHAR*)cipherData.data(), (UCHAR*)decryptData.data(), key->data(), 1);
+			intel_AES_dec256((UCHAR*)cipherData.data(), (UCHAR*)decryptData.data(), key->value(), 1);
 			break;
 		}
 	}
@@ -173,7 +178,8 @@ bool AESCryptographerHash::decrypt(Device deviceNumber, Key keyNumber, const QVa
 
 AESCryptographerChinese::AESCryptographerChinese(QObject *parent) : AESCryptographer(parent)
 {
-
+	mSecondRealKey = new AESChineseKeyCiper(this);
+	mSecondFakeKey = new AESChineseKeyCiper(this);
 }
 
 bool AESCryptographerChinese::encrypt(const QVariant &parameters)
@@ -182,13 +188,16 @@ bool AESCryptographerChinese::encrypt(const QVariant &parameters)
 	{
 		return false;
 	}
+	if (!mSecondRealKey->isValid() || !mSecondFakeKey->isValid())
+	{
+		qDebug() << "second keys not valid";
+		return false;
+	}
 	EncryptionType type = static_cast<EncryptionType>(parameters.toInt() % 8);
 	AESKeyCipher *realKey = qobject_cast<AESKeyCipher *>(pRealKey);
 	AESKeyCipher *fakeKey = qobject_cast<AESKeyCipher *>(pFakeKey);
-	if (mSecondPartFakeKey.is_null() || mSecondPartRealKey.is_null())
-	{
-		generateSecondaryKeys();
-	}
+	intermediateRealKey = mSecondFakeKey->value() * inverse_mod(mSecondFakeKey->value(), mSecondRealKey->value());
+	intermediateFakeKey = mSecondRealKey->value() * inverse_mod(mSecondRealKey->value(), mSecondFakeKey->value());
 	while (!realInputDevice->atEnd() || !fakeInputDevice->atEnd())
 	{
 		QByteArray realInputData(16, 0x00);
@@ -203,7 +212,7 @@ bool AESCryptographerChinese::encrypt(const QVariant &parameters)
 		}
 		big_int C1 = Tools::big_intFromByteArray<quint64>(encryptAES(realInputData, realKey, type));
 		big_int C2 = Tools::big_intFromByteArray<quint64>(encryptAES(fakeInputData, fakeKey, type));
-		big_int modulo = mSecondPartRealKey * mSecondPartFakeKey;
+		big_int modulo = mSecondRealKey->value() * mSecondFakeKey->value();
 		big_int C = mod(C1 * intermediateRealKey + C2 * intermediateFakeKey, modulo);
 		QByteArray result = Tools::big_intToByteArray(C);
 		if (static_cast<size_t>(result.size()) * 8 < modulo.length())
@@ -224,51 +233,57 @@ bool AESCryptographerChinese::decrypt(Cryptographer::Device deviceNumber, Crypto
 	{
 		return false;
 	}
+	AESChineseKeyCiper *secondKey = keyNumber == Cryptographer::RealKey ? mSecondRealKey : mSecondFakeKey;
+	if (!secondKey->isValid())
+	{
+		qDebug() << "second key not valid";
+		return false;
+	}
 	EncryptionType type = static_cast<EncryptionType>(parameters.toInt() % 8);
 	AESKeyCipher *key = qobject_cast<AESKeyCipher *>(keyFromNumber(keyNumber));
-	big_int secondKey = keyNumber == Cryptographer::RealKey ? mSecondPartRealKey : mSecondPartFakeKey;
 	QIODevice *device = deviceFromNumber(deviceNumber);
 	QByteArray cipherData(33, 0x00);
 	while (!device->atEnd())
 	{
 		device->read(cipherData.data(), 33);
-		big_int C = mod(Tools::big_intFromByteArray<quint64>(cipherData), secondKey);
+		big_int C = mod(Tools::big_intFromByteArray<quint64>(cipherData), secondKey->value());
 		outputDevice->write(decryptAES(Tools::big_intToByteArray(C), key, type));
 	}
 	return true;
 	return true;
 }
 
-QByteArray AESCryptographerChinese::secondPartRealKey()
+KeyCipher *AESCryptographerChinese::secondRealKey()
 {
-	return Tools::big_intToByteArray(mSecondPartRealKey);
+	return mSecondRealKey;
 }
 
-QByteArray AESCryptographerChinese::secondPartFakeKey()
+KeyCipher *AESCryptographerChinese::secondFakeKey()
 {
-	return Tools::big_intToByteArray(mSecondPartRealKey);
+	return mSecondFakeKey;
 }
 
-void AESCryptographerChinese::setSecondPartRealKey(const QByteArray &ba)
+void AESCryptographerChinese::setSecondRealKey(const QByteArray &ba)
 {
-	mSecondPartRealKey = Tools::big_intFromByteArray<quint64>(ba);
+	mSecondRealKey->load(ba);
 }
 
-void AESCryptographerChinese::setSecondPartFakeKey(const QByteArray &ba)
+void AESCryptographerChinese::setSecondFakeKey(const QByteArray &ba)
 {
-	mSecondPartFakeKey = Tools::big_intFromByteArray<quint64>(ba);
+	mSecondFakeKey->load(ba);
 }
 
-void AESCryptographerChinese::generateSecondaryKeys()
+void AESCryptographerChinese::generateSecondKeys()
 {
-	mSecondPartRealKey = big_int::random_with_length(128 + 1);
+	big_int secondRealKey = big_int::random_with_length(128 + 1);
+	big_int secondFakeKey;
 	do
 	{
-		mSecondPartFakeKey = big_int::random_with_length(128 + 1);
+		secondFakeKey = big_int::random_with_length(128 + 1);
 	}
-	while (!(euclid<big_int>(mSecondPartRealKey, mSecondPartFakeKey).is_unit()));
-	intermediateRealKey = mSecondPartFakeKey * inverse_mod(mSecondPartFakeKey, mSecondPartRealKey);
-	intermediateFakeKey = mSecondPartRealKey * inverse_mod(mSecondPartRealKey, mSecondPartFakeKey);
+	while (!(euclid<big_int>(secondRealKey, secondFakeKey).is_unit()));
+	mSecondRealKey->load(Tools::big_intToByteArray(secondRealKey));
+	mSecondFakeKey->load(Tools::big_intToByteArray(secondFakeKey));
 }
 
 /** AES key **/
@@ -276,7 +291,6 @@ void AESCryptographerChinese::generateSecondaryKeys()
 
 AESKeyCipher::AESKeyCipher(QObject *parent) : KeyCipher(parent)
 {
-
 }
 
 bool AESKeyCipher::load(const QByteArray &ba)
@@ -286,8 +300,8 @@ bool AESKeyCipher::load(const QByteArray &ba)
 		return false;
 	}
 	if (ba.size() !=AESCryptographerHash::AES_128 &&
-			ba.size() != AESCryptographerHash::AES_192 &&
-			ba.size() != AESCryptographerHash::AES_256)
+		ba.size() != AESCryptographerHash::AES_192 &&
+		ba.size() != AESCryptographerHash::AES_256)
 	{
 		qDebug() << Q_FUNC_INFO << "size of key is not compatible";
 		valid = false;
@@ -298,12 +312,56 @@ bool AESKeyCipher::load(const QByteArray &ba)
 	return true;
 }
 
-UCHAR *AESKeyCipher::data()
+QByteArray AESKeyCipher::data() const
+{
+	return mData;
+}
+
+UCHAR *AESKeyCipher::value() const
 {
 	return (UCHAR*)mData.data();
 }
 
-int AESKeyCipher::keySize()
+int AESKeyCipher::keySize() const
 {
 	return mData.size();
+}
+
+/** AES Chinese key **/
+/** -------------------------------------------------------------------------------------------------------------------------- **/
+
+AESChineseKeyCiper::AESChineseKeyCiper(QObject *parent) : KeyCipher(parent)
+{
+}
+
+bool AESChineseKeyCiper::load(const QByteArray &ba)
+{
+	if (!KeyCipher::load(ba))
+	{
+		return false;
+	}
+	if (ba.size() != keySize())
+	{
+		qDebug() << Q_FUNC_INFO << "size of key is not compatible";
+		valid = false;
+		return false;
+	}
+	mData = Tools::big_intFromByteArray<quint64>(ba);
+	valid = true;
+	return true;
+}
+
+QByteArray AESChineseKeyCiper::data() const
+{
+	return Tools::big_intToByteArray(mData);
+}
+
+big_int AESChineseKeyCiper::value() const
+{
+	return mData;
+}
+
+int AESChineseKeyCiper::keySize() const
+{
+	return AESCryptographer::blockSize() + 1;
 }

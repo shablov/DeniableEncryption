@@ -10,6 +10,7 @@
 #include <tools.h>
 
 class AESKeyCipher;
+class AESChineseKeyCiper;
 
 class AESCryptographer : public Cryptographer
 {
@@ -30,6 +31,7 @@ public:
 	};
 
 	AESCryptographer(QObject *parent = 0);
+	static int blockSize();
 
 	// Cryptographer interface
 public:
@@ -67,16 +69,16 @@ public:
 	virtual bool decrypt(Cryptographer::Device deviceNumber, Cryptographer::Key keyNumber,
 						 const QVariant &parameters = QVariant());
 
-	QByteArray secondPartRealKey();
-	QByteArray secondPartFakeKey();
+	KeyCipher *secondRealKey();
+	KeyCipher *secondFakeKey();
 
-	void setSecondPartRealKey(const QByteArray &ba);
-	void setSecondPartFakeKey(const QByteArray &ba);
+	void generateSecondKeys();
+	void setSecondRealKey(const QByteArray &ba);
+	void setSecondFakeKey(const QByteArray &ba);
 
 private:
-	void generateSecondaryKeys();
-	big_int mSecondPartRealKey;
-	big_int mSecondPartFakeKey;
+	AESChineseKeyCiper *mSecondRealKey;
+	AESChineseKeyCiper *mSecondFakeKey;
 
 	big_int intermediateRealKey;
 	big_int intermediateFakeKey;
@@ -91,11 +93,28 @@ public:
 	// KeyCipher interface
 public:
 	virtual bool load(const QByteArray &ba);
-	UCHAR *data();
-	int keySize();
+	QByteArray data() const;
+	UCHAR *value() const;
+	int keySize() const;
 
-
+private:
 	QByteArray mData;
 };
 
+class AESChineseKeyCiper : public KeyCipher
+{
+	Q_OBJECT
+public:
+	AESChineseKeyCiper(QObject *parent = 0);
+
+	// KeyCipher interface
+public:
+	virtual bool load(const QByteArray &ba);
+	QByteArray data() const;
+	big_int value() const;
+	int keySize() const;
+
+private:
+	big_int mData;
+};
 #endif // AESCRYPTOGRAPHER_H
