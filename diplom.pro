@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS = libs/libcryptograph \
-    examples
+    examples \
+    application
 
 examples.depends = libs/libcryptograph
 

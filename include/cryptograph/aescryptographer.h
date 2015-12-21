@@ -3,10 +3,6 @@
 
 #include "cryptographer.h"
 
-#define bool
-#include "intel_aes/iaesni.h"
-#undef bool
-
 #include <tools.h>
 
 class AESKeyCipher;
@@ -32,6 +28,9 @@ public:
 
 	AESCryptographer(QObject *parent = 0);
 	static int blockSize();
+	void generateInitialValue();
+	void setInitialValue(const QByteArray &initial);
+	QByteArray initialValue() const;
 
 	// Cryptographer interface
 public:
@@ -40,8 +39,12 @@ public:
 						 const QVariant &parameters = QVariant());
 
 protected:
-	QByteArray encryptAES(const QByteArray &data, AESKeyCipher *key, EncryptionType type);
-	QByteArray decryptAES(const QByteArray &data, AESKeyCipher *key, EncryptionType type);
+	QByteArray encryptAES(const QByteArray &inputData, AESKeyCipher *key,
+						  EncryptionType type, const QByteArray &initial = QByteArray());
+	QByteArray decryptAES(const QByteArray &data, AESKeyCipher *key,
+						  EncryptionType type, const QByteArray &initial = QByteArray());
+
+	QByteArray mInitialValue;
 };
 
 class AESCryptographerHash : public AESCryptographer
@@ -94,7 +97,7 @@ public:
 public:
 	virtual bool load(const QByteArray &ba);
 	QByteArray data() const;
-	UCHAR *value() const;
+	quint8 *value() const;
 	int keySize() const;
 
 private:

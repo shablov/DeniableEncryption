@@ -9,6 +9,10 @@ QT       += core
 TARGET = cryptograph
 TEMPLATE = app
 
+OBJECTS_DIR = obj
+MOC_DIR = obj
+RCC_DIR = obj
+
 SOURCES += main.cpp
 
 INCLUDEPATH += ./../../include

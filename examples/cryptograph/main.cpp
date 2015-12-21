@@ -6,6 +6,7 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QFile>
+#include <datadevice.h>
 
 int main(int argc, char *argv[])
 {
@@ -52,8 +53,8 @@ int main(int argc, char *argv[])
 
 
 //	cipherData.clear();
-//	realKey = "0123456789ABCDEF0123456789ABCDEF";
-//	fakeKey = "FEDCBA9876543210FEDCBA9876543210";
+	realKey = "0123456789ABCDEF0123456789ABCDEF";
+	fakeKey = "FEDCBA9876543210FEDCBA9876543210";
 //	qDebug() << "--------------- AES 256 ---------------";
 //	qDebug() << "Input data";
 //	qDebug() << "Real data:" << realData.toHex();
@@ -86,63 +87,61 @@ int main(int argc, char *argv[])
 
 
 	cipherData.clear();
-	QFile realFile("./../generator/random1.bin");
-	QFile fakeFile("./../generator/random2.bin");
+//	QFile realFile("./../generator/random1.bin");
+//	QFile fakeFile("./../generator/random2.bin");
 	QFile cipherFile("cipher.bin");
-	if (!realFile.exists() || !fakeFile.exists())
-	{
-		qDebug() << "files not exists";
-		return 1;
-	}
-	realKey = "0123456789ABCDEF0123456789ABCDEF";
-	fakeKey = "FEDCBA9876543210FEDCBA9876543210";
-	qDebug() << "--------------- AES 256 ---------------";
-	qDebug() << "Input data";
+	realKey = "sfiojfijo309*(#9f3o23&*@!)ncdlsd";
+	fakeKey = "ojasd(&25d&^adh&D&Ajfe0)LSD!SKCs";
+//	qDebug() << "--------------- AES 256 ---------------";
+//	qDebug() << "Input data";
 //	qDebug() << "Real data:" << realData.toHex();
 //	qDebug() << "Fake data:" << fakeData.toHex();
-	qDebug() << "Real key:" << realKey;
-	qDebug() << "Fake key:" << fakeKey;
-	AESCryptographerChinese *cryptChinese = new AESCryptographerChinese;
-	cryptChinese->setDevice(&realFile, Cryptographer::RealDevice);
-	cryptChinese->setDevice(&fakeFile, Cryptographer::FakeDevice);
-	cryptChinese->setDevice(&cipherFile, Cryptographer::OutputDevice);
+//	qDebug() << "Real key:" << realKey;
+//	qDebug() << "Fake key:" << fakeKey;
+	AESCryptographer *cryptChinese = new AESCryptographerHash;
+	cryptChinese->setDevice(DataDeviceFactory::device(RandomDevice), Cryptographer::RealDevice);
+	cryptChinese->setDevice(DataDeviceFactory::device(RandomDevice), Cryptographer::FakeDevice);
+	cryptChinese->setDevice(new StdUIntOutputDevice, Cryptographer::OutputDevice);
 	cryptChinese->setKey(realKey, Cryptographer::RealKey);
 	cryptChinese->setKey(fakeKey, Cryptographer::FakeKey);
-	cryptChinese->generateSecondKeys();
-	KeyCipher *secondRealKey = cryptChinese->secondRealKey();
-	KeyCipher *secondFakeKey = cryptChinese->secondFakeKey();
-	qDebug() << "Begin encrypt in:" << QTime::currentTime();
+//	cryptChinese->generateSecondKeys();
+	cryptChinese->generateInitialValue();
+//	KeyCipher *secondRealKey = cryptChinese->secondRealKey();
+//	KeyCipher *secondFakeKey = cryptChinese->secondFakeKey();
+//	qDebug() << "Begin encrypt in:" << QTime::currentTime();
 	cryptChinese->encrypt(parameters);
-	qDebug() << "End encrypt in:" << QTime::currentTime();
+//	qDebug() << "End encrypt in:" << QTime::currentTime();
 //	qDebug() << "Cryptogram in hex:" << cipherData.toHex();
 
-	QFile realDecryptFile("randomdecrypt1.bin");
-	QFile fakeDecryptFile("randomdecrypt2.bin");
-	cryptChinese->setDevice(&cipherFile, Cryptographer::RealDevice);
-	cryptChinese->setDevice(&cipherFile, Cryptographer::FakeDevice);
-	cryptChinese->setDevice(&realDecryptFile, Cryptographer::OutputDevice);
-	cryptChinese->setSecondRealKey(secondRealKey->data());
-	cryptChinese->setSecondFakeKey(secondFakeKey->data());
-	qDebug() << "Begin decrypt real data in:" << QTime::currentTime();
-	cryptChinese->decrypt(Cryptographer::RealDevice, Cryptographer::RealKey, parameters);
-	qDebug() << "End decrypt real data in:" << QTime::currentTime();
-	realDecryptFile.open(QIODevice::ReadOnly);
-	realFile.open(QIODevice::ReadOnly);
-	qDebug() << (realDecryptFile.readAll() == realFile.readAll());
-	realDecryptFile.close();
-	realFile.close();
+//	QFile realDecryptFile("randomdecrypt1.bin");
+//	QFile fakeDecryptFile("randomdecrypt2.bin");
+//	cryptChinese->setDevice(&cipherFile, Cryptographer::RealDevice);
+//	cryptChinese->setDevice(&cipherFile, Cryptographer::FakeDevice);
+//	cryptChinese->setDevice(&realDecryptFile, Cryptographer::OutputDevice);
+//	cryptChinese->setSecondRealKey(secondRealKey->data());
+//	cryptChinese->setSecondFakeKey(secondFakeKey->data());
+//	qDebug() << "Begin decrypt real data in:" << QTime::currentTime();
+//	cryptChinese->decrypt(Cryptographer::RealDevice, Cryptographer::RealKey, parameters);
+//	qDebug() << "End decrypt real data in:" << QTime::currentTime();
+//	realDecryptFile.open(QIODevice::ReadOnly);
+//	realFile.open(QIODevice::ReadOnly);
+//	QByteArray ba = realDecryptFile.readAll();
+//	qDebug() << (ba == QByteArray(ba.size(), 0xAA));
+//	realDecryptFile.close();
+//	realFile.close();
 //	qDebug() << "Decrypted real data" << decryptData.toHex();
-	qDebug() << "Begin decrypt fake data in:" << QTime::currentTime();
-	cryptChinese->setDevice(&fakeDecryptFile, Cryptographer::OutputDevice);
-	cryptChinese->decrypt(Cryptographer::FakeDevice, Cryptographer::FakeKey, parameters);
-	fakeDecryptFile.open(QIODevice::ReadOnly);
-	fakeFile.open(QIODevice::ReadOnly);
-	qDebug() << (fakeDecryptFile.readAll() == fakeFile.readAll());
-	fakeDecryptFile.close();
-	fakeFile.close();
-	qDebug() << "End decrypt fake data in:" << QTime::currentTime();
+//	qDebug() << "Begin decrypt fake data in:" << QTime::currentTime();
+//	cryptChinese->setDevice(&fakeDecryptFile, Cryptographer::OutputDevice);
+//	cryptChinese->decrypt(Cryptographer::FakeDevice, Cryptographer::FakeKey, parameters);
+//	fakeDecryptFile.open(QIODevice::ReadOnly);
+//	fakeFile.open(QIODevice::ReadOnly);
+//	ba = fakeDecryptFile.readAll();
+//	qDebug() << (ba == QByteArray(ba.size(), 0xFF));
+//	fakeDecryptFile.close();
+//	fakeFile.close();
+//	qDebug() << "End decrypt fake data in:" << QTime::currentTime();
 //	qDebug() << "Decrypted fake data" << decryptData.toHex();
-	qDebug() << "\n";
+//	qDebug() << "\n";
 
 	return 0;
 }

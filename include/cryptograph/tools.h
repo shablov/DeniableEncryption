@@ -7,16 +7,19 @@
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#pragma GCC diagnostic ignored "-Wcomment"
 #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
 #pragma GCC diagnostic ignored "-Wreorder"
 #pragma GCC diagnostic ignored "-Wparentheses"
+#pragma GCC diagnostic ignored "-Wcomment"
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 
 #include <big_int.hpp>
+#include <prime.hpp>
+using namespace Arageli;
 
 #pragma GCC diagnostic pop
 
-using namespace Arageli;
 
 class Tools
 {
