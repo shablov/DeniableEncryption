@@ -1,5 +1,5 @@
 #include "datasourcewidget.h"
-#include "fileselectwidget.h"
+#include "gui/widgets/fileselectwidget.h"
 
 #include <common/dict.h>
 
@@ -25,6 +25,15 @@ DataSourceWidget::DataSourceWidget(QWidget *parent) : QWidget(parent)
 	buttonGroup->addButton(fromFileCheckBox);
 	buttonGroup->addButton(generatorCheckBox);
 	buttonGroup->setExclusive(true);
+	connect(buttonGroup, static_cast<void (QButtonGroup::*)(QAbstractButton *button, bool checked)>(&QButtonGroup::buttonToggled),
+			this, [=] (QAbstractButton *button, bool checked)
+	{
+		if (checked)
+		{
+			fileInput->setEnabled(button == fromFileCheckBox);
+			generatorInput->setEnabled(button == generatorCheckBox);
+		}
+	});
 	fromFileCheckBox->setChecked(true);
 
 	QFormLayout *mainLayout = new QFormLayout(this);

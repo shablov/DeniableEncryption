@@ -1,6 +1,6 @@
-#include "gui/widgets/keywidget.h"
+#include "keywidget.h"
 
-#include "fileselectwidget.h"
+#include "gui/widgets/fileselectwidget.h"
 
 #include <QButtonGroup>
 #include <QCheckBox>

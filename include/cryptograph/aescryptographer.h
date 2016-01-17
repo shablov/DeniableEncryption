@@ -38,6 +38,9 @@ public:
 	virtual bool decrypt(Cryptographer::Device deviceNumber, Cryptographer::Key keyNumber,
 						 const QVariant &parameters = QVariant());
 
+	virtual QWidget *widget();
+	virtual QString type();
+
 protected:
 	QByteArray encryptAES(const QByteArray &inputData, AESKeyCipher *key,
 						  EncryptionType type, const QByteArray &initial = QByteArray());

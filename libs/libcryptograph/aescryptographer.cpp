@@ -1,11 +1,15 @@
 #include "aescryptographer.h"
 
 #define bool
-#include "intel_aes/iaesni.h"
+#include "iaesni.h"
 #undef bool
 
 #include <QDebug>
+#include <QFormLayout>
+#include <QHBoxLayout>
 #include <datadevice.h>
+
+#include <QtWidgets/QComboBox>
 
 /** AES default (check keys and parameters) **/
 /** -------------------------------------------------------------------------------------------------------------------------- **/
@@ -514,4 +518,29 @@ big_int AESChineseKeyCiper::value() const
 int AESChineseKeyCiper::keySize() const
 {
 	return AESCryptographer::blockSize() + 1;
+}
+
+
+QWidget *AESCryptographer::widget()
+{
+	QWidget *widget = new QWidget();
+	QFormLayout *mainLayout = new QFormLayout(widget);
+	QComboBox *encryptionType = new QComboBox(widget);
+	encryptionType->addItem("Random");
+	encryptionType->addItem("ChineseTheoreme");
+	QComboBox *encryptionMode = new QComboBox(widget);
+	encryptionMode->addItem("ECB", ECB);
+	encryptionMode->addItem("CBC", CBC);
+	QComboBox *keyType = new QComboBox(widget);
+	keyType->addItem("AES_128", AES_128);
+	keyType->addItem("AES_192", AES_192);
+	keyType->addItem("AES_256", AES_256);
+	mainLayout->addRow("Encryption Type", encryptionType);
+	mainLayout->addRow("Encryption Mode", encryptionMode);
+	mainLayout->addRow("Key Type", keyType);
+}
+
+QString AESCryptographer::type()
+{
+	return "AES";
 }

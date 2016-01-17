@@ -35,6 +35,8 @@ public:
 public:
 	virtual bool encrypt(const QVariant &parameters = QVariant());
 	virtual bool decrypt(Cryptographer::Device deviceNumber, Cryptographer::Key keyNumber, const QVariant &parameters);
+	virtual QWidget *widget() = 0;
+	virtual QString type() = 0;
 
 protected:
 	void endEncrypt();

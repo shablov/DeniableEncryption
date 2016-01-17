@@ -22,7 +22,7 @@ public:
 	~MainWindow();
 
 private:
-	QComboBox *encryptionTypeComboBox;
+	QComboBox *typeComboBox;
 	QComboBox *algorithmComboBox;
 
 	/// Only blocks algorithms

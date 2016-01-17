@@ -3,16 +3,21 @@
 #include <common/dict.h>
 #include <gui/guitools.h>
 
+#include <QComboBox>
+#include <QCryptographicHash>
 #include <QHBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 {
+	setMinimumSize(600, 400);
 	Dict::setFileName("application.dict");
 
-	QWidget *widget = new QWidget;
+	QTabWidget *widget = new QTabWidget(this);
 	setCentralWidget(widget);
-	QHBoxLayout *mainLayout = new QHBoxLayout(widget);
+
+	widget->addTab(new QWidget(), Dict::tr("type_and_keys"));
+	widget->addTab(new QWidget(), Dict::tr("information"));
 }
 
 MainWindow::~MainWindow()

@@ -16,35 +16,22 @@ MOC_DIR = obj
 RCC_DIR = obj
 
 SOURCES += main.cpp\
-	mainwindow.cpp \
-	common/dictprivate.cpp \
-	common/dict.cpp \
-	gui/guitools.cpp \
-	gui/widgets/checkedcombobox.cpp \
-	gui/widgets/colorlabel.cpp \
-	gui/widgets/fileselectwidget.cpp \
-	gui/widgets/ledwidget.cpp \
-    gui/widgets/keywidget.cpp \
-    gui/widgets/datasourcewidget.cpp
+	mainwindow.cpp
 
-HEADERS  += mainwindow.h \
-	common/dictprivate.h \
-	common/dict.h \
-	gui/guitools.h \
-	gui/widgets/checkedcombobox.h \
-	gui/widgets/colorlabel.h \
-	gui/widgets/fileselectwidget.h \
-	gui/widgets/ledwidget.h \
-    gui/widgets/keywidget.h \
-    gui/widgets/datasourcewidget.h
-
+HEADERS  += mainwindow.h
+INCLUDEPATH += ./../include
 
 unix:!macx: LIBS += -L$$PWD/../lib/ -lcryptograph
-INCLUDEPATH += ./../include \
-			   ./../include/cryptograph \
+INCLUDEPATH += ./../include/cryptograph
 
 unix:!macx: LIBS += -L$$PWD/../lib/ -larageli
 INCLUDEPATH += $$PWD/../include/arageli
 
 unix:!macx: LIBS += -L$$PWD/.m./../lib/ -lintel_aes
 INCLUDEPATH += $$PWD/../../include/intel_aes
+
+unix:!macx: LIBS += -L$$PWD/../lib/ -lgui
+INCLUDEPATH += $$PWD/../include/gui
+
+unix:!macx: LIBS += -L$$PWD/../lib/ -lcommon
+INCLUDEPATH += $$PWD/../include/common

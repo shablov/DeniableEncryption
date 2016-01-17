@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    cryptograph \
-    generator
+	cryptograph \
+	generator

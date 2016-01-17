@@ -1,9 +1,10 @@
 TEMPLATE = subdirs
-SUBDIRS = libs/libcryptograph \
-    examples \
-    application
+SUBDIRS = libs \
+	examples \
+	application \
 
-examples.depends = libs/libcryptograph
+examples.depends = libs
+application.depends = libs
 
 !exists(lib) {
     system(mkdir lib)
